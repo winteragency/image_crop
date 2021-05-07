@@ -19,10 +19,12 @@ class Crop extends StatefulWidget {
   final double maximumScale;
   final bool alwaysShowGrid;
   final ImageErrorListener? onImageError;
+  final double rotation;
 
   const Crop({
     Key? key,
     required this.image,
+    this.rotation = 0,
     this.aspectRatio,
     this.maximumScale = 2.0,
     this.alwaysShowGrid = false,
@@ -33,6 +35,7 @@ class Crop extends StatefulWidget {
     File file, {
     Key? key,
     double scale = 1.0,
+    this.rotation = 0,
     this.aspectRatio,
     this.maximumScale = 2.0,
     this.alwaysShowGrid = false,
@@ -45,6 +48,7 @@ class Crop extends StatefulWidget {
     Key? key,
     AssetBundle? bundle,
     String? package,
+    this.rotation = 0,
     this.aspectRatio,
     this.maximumScale = 2.0,
     this.alwaysShowGrid = false,
@@ -186,6 +190,7 @@ class CropState extends State<Crop> with TickerProviderStateMixin, Drag {
             onScaleEnd: _isEnabled ? _handleScaleEnd : null,
             child: CustomPaint(
               painter: _CropPainter(
+                rotation: widget.rotation,
                 image: _image,
                 ratio: _ratio,
                 view: _view,
@@ -624,6 +629,7 @@ class _CropPainter extends CustomPainter {
   final Rect area;
   final double scale;
   final double active;
+  final double rotation;
 
   _CropPainter({
     required this.image,
@@ -632,6 +638,7 @@ class _CropPainter extends CustomPainter {
     required this.area,
     required this.scale,
     required this.active,
+    required this.rotation
   });
 
   @override
@@ -655,6 +662,7 @@ class _CropPainter extends CustomPainter {
 
     canvas.save();
     canvas.translate(rect.left, rect.top);
+    canvas.rotate(this.rotation);
 
     final paint = Paint()..isAntiAlias = false;
 
