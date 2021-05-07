@@ -589,9 +589,16 @@ class CropState extends State<Crop> with TickerProviderStateMixin, Drag {
       _lastFocalPoint = details.focalPoint;
 
       setState(() {
+        // Sick code written by pelleking
+        double magnitude = sqrt(delta.dy * delta.dy + delta.dx * delta.dx);
+        double movementAngle = atan2(delta.dy, delta.dx);
+        movementAngle -= widget.rotation;
+        double newDx = cos(movementAngle) * magnitude;
+        double newDy = sin(movementAngle) * magnitude;
+
         _view = _view.translate(
-          delta.dx / (image.width * _scale * _ratio),
-          delta.dy / (image.height * _scale * _ratio),
+          newDx / (image.width * _scale * _ratio),
+          newDy / (image.height * _scale * _ratio),
         );
       });
     } else if (_action == _CropAction.scaling) {
@@ -648,7 +655,8 @@ class _CropPainter extends CustomPainter {
         oldDelegate.ratio != ratio ||
         oldDelegate.area != area ||
         oldDelegate.active != active ||
-        oldDelegate.scale != scale;
+        oldDelegate.scale != scale ||
+        oldDelegate.rotation != rotation;
   }
 
   @override
@@ -661,8 +669,12 @@ class _CropPainter extends CustomPainter {
     );
 
     canvas.save();
-    canvas.translate(rect.left, rect.top);
+
+    canvas.translate(size.width / 2, size.height / 2);
     canvas.rotate(this.rotation);
+    canvas.translate(-size.width / 2, -size.height / 2);
+
+    canvas.translate(rect.left, rect.top);
 
     final paint = Paint()..isAntiAlias = false;
 
@@ -686,6 +698,10 @@ class _CropPainter extends CustomPainter {
       canvas.drawImageRect(image, src, dst, paint);
       canvas.restore();
     }
+
+  canvas.translate(size.width / 2, size.height / 2);
+  canvas.rotate(-this.rotation);
+  canvas.translate(-size.width / 2, -size.height / 2);
 
     paint.color = Color.fromRGBO(
         0x0,
